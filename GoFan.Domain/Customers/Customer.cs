@@ -1,0 +1,22 @@
+﻿namespace GoFan.Domain.Customers;
+
+public class Customer
+{
+    public int Id { get; set; }
+
+    public required string Phone { get; set; }
+
+    public string? Email { get; set; }
+
+    public required string PasswordHash { get; set; }
+
+    public string? FullName { get; set; }
+
+    public string? AvatarUrl { get; set; }
+
+    public bool Active { get; set; } = true;
+
+    public DateTime CreatedAt { get; set; }
+
+    public DateTime UpdatedAt { get; set; }
+}

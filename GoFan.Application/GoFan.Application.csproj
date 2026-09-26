@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Inventory\" />
+    <Folder Include="Favorites\" />
+    <Folder Include="Carts\" />
+    <Folder Include="Combos\" />
+    <Folder Include="Chat\" />
+    <Folder Include="Configurations\" />
+    <Folder Include="Notifications\" />
+    <Folder Include="Reviews\" />
+    <Folder Include="Promotions\" />
+    <Folder Include="Products\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GoFan.Domain\GoFan.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="../GoFan.Application/GoFan.Application.csproj" />
+  <Project Path="../GoFan.Domain/GoFan.Domain.csproj" />
+  <Project Path="../GoFan.Infrastructure/GoFan.Infrastructure.csproj" />
+  <Project Path="GOFAN.csproj" />
+</Solution>
