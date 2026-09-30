@@ -37,9 +37,11 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateProductDto dto)
+    public async Task<IActionResult> Create(
+        CreateProductDto dto)
     {
-        var result = await _productService.CreateAsync(dto);
+        var result =
+            await _productService.CreateAsync(dto);
 
         return Ok(result);
     }
@@ -54,7 +56,8 @@ public class ProductController : ControllerBase
             return BadRequest("Id không khớp");
         }
 
-        var result = await _productService.UpdateAsync(dto);
+        var result =
+            await _productService.UpdateAsync(dto);
 
         if (!result)
         {
@@ -67,7 +70,8 @@ public class ProductController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var result = await _productService.DeleteAsync(id);
+        var result =
+            await _productService.DeleteAsync(id);
 
         if (!result)
         {

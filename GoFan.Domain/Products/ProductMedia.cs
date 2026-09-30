@@ -12,7 +12,6 @@ namespace GoFan.Domain.Products
         public required string Url { get; set; }
         public string? AltText { get; set; }
         public int  SortOrder { get; set; }
-        public bool IsPrimary { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

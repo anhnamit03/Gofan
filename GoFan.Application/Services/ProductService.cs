@@ -1,7 +1,9 @@
 ﻿using GoFan.Application.DTOs.Products;
 using GoFan.Application.Interfaces.Repositories;
 using GoFan.Application.Interfaces.Services;
+using GoFan.Application.Mappers;
 using GoFan.Domain.Products;
+using GoFan.Domain.Promotions;
 
 namespace GoFan.Application.Services;
 
@@ -18,43 +20,42 @@ public class ProductService : IProductService
     {
         var products = await _productRepository.GetAllAsync();
 
-        return products.Select(product => new ProductDto
+        var now = DateTime.UtcNow;
+
+        var result = new List<ProductDto>();
+
+        foreach (var product in products)
         {
-            Id = product.Id,
-            CategoryId = product.CategoryId,
-            SKU = product.SKU,
-            Name = product.Name,
-            BasePrice = product.BasePrice,
-            Description = product.Description,
-            TechnicalInfo = product.TechnicalInfo,
-            Active = product.Active,
-            CreatedAt = product.CreatedAt,
-            UpdatedAt = product.UpdatedAt
-        }).ToList();
+            var promotion =
+                await _productRepository.GetActivePromotionAsync(
+                    product.Id,
+                    now);
+
+            result.Add(
+                ProductMapper.ToDto(product, promotion));
+        }
+
+        return result;
     }
 
     public async Task<ProductDto?> GetByIdAsync(int id)
     {
-        var product = await _productRepository.GetByIdAsync(id);
+        var product =
+            await _productRepository.GetByIdAsync(id);
 
         if (product == null)
         {
             return null;
         }
 
-        return new ProductDto
-        {
-            Id = product.Id,
-            CategoryId = product.CategoryId,
-            SKU = product.SKU,
-            Name = product.Name,
-            BasePrice = product.BasePrice,
-            Description = product.Description,
-            TechnicalInfo = product.TechnicalInfo,
-            Active = product.Active,
-            CreatedAt = product.CreatedAt,
-            UpdatedAt = product.UpdatedAt
-        };
+        var now = DateTime.UtcNow;
+
+        var promotion =
+            await _productRepository.GetActivePromotionAsync(
+                product.Id,
+                now);
+
+        return ProductMapper.ToDto(product, promotion);
     }
 
     public async Task<ProductDto> CreateAsync(CreateProductDto dto)
@@ -64,29 +65,24 @@ public class ProductService : IProductService
             CategoryId = dto.CategoryId,
             Name = dto.Name,
             BasePrice = dto.BasePrice,
+            ImageUrl = dto.ImageUrl,
             Description = dto.Description,
             TechnicalInfo = dto.TechnicalInfo,
+
             SKU = Guid.NewGuid().ToString("N")[..12],
+
             Active = true,
+
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
 
-        var createdProduct = await _productRepository.AddAsync(product);
+        var createdProduct =
+            await _productRepository.AddAsync(product);
 
-        return new ProductDto
-        {
-            Id = createdProduct.Id,
-            CategoryId = createdProduct.CategoryId,
-            SKU = createdProduct.SKU,
-            Name = createdProduct.Name,
-            BasePrice = createdProduct.BasePrice,
-            Description = createdProduct.Description,
-            TechnicalInfo = createdProduct.TechnicalInfo,
-            Active = createdProduct.Active,
-            CreatedAt = createdProduct.CreatedAt,
-            UpdatedAt = createdProduct.UpdatedAt
-        };
+        return ProductMapper.ToDto(
+            createdProduct,
+            null);
     }
 
     public async Task<bool> UpdateAsync(UpdateProductDto dto)
@@ -102,12 +98,14 @@ public class ProductService : IProductService
         existingProduct.CategoryId = dto.CategoryId;
         existingProduct.Name = dto.Name;
         existingProduct.BasePrice = dto.BasePrice;
+        existingProduct.ImageUrl = dto.ImageUrl;
         existingProduct.Description = dto.Description;
         existingProduct.TechnicalInfo = dto.TechnicalInfo;
         existingProduct.Active = dto.Active;
         existingProduct.UpdatedAt = DateTime.UtcNow;
 
-        return await _productRepository.UpdateAsync(existingProduct);
+        return await _productRepository.UpdateAsync(
+            existingProduct);
     }
 
     public async Task<bool> DeleteAsync(int id)

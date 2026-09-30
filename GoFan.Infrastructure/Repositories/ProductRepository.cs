@@ -1,5 +1,6 @@
 ﻿using GoFan.Application.Interfaces.Repositories;
 using GoFan.Domain.Products;
+using GoFan.Domain.Promotions;
 using GoFan.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,11 +25,28 @@ namespace GoFan.Infrastructure.Repositories
             return await _context.Products.FindAsync(id);
         }
 
+        public async Task<Promotion?> GetActivePromotionAsync(
+            int productId,
+            DateTime now)
+        {
+            return await _context.ProductPromotions
+                .Where(pp => pp.ProductId == productId)
+                .Join(
+                    _context.Promotions,
+                    pp => pp.PromotionId,
+                    promotion => promotion.Id,
+                    (pp, promotion) => promotion)
+                .Where(promotion =>
+                    promotion.Active &&
+                    promotion.StartAt <= now &&
+                    promotion.EndAt >= now)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<Product> AddAsync(Product product)
         {
             await _context.Products.AddAsync(product);
             await _context.SaveChangesAsync();
-
             return product;
         }
 
@@ -36,7 +54,6 @@ namespace GoFan.Infrastructure.Repositories
         {
             _context.Products.Update(product);
             await _context.SaveChangesAsync();
-
             return true;
         }
 
@@ -44,7 +61,6 @@ namespace GoFan.Infrastructure.Repositories
         {
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
-
             return true;
         }
     }

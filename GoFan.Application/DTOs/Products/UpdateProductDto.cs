@@ -10,6 +10,8 @@ public class UpdateProductDto
 
     public decimal BasePrice { get; set; }
 
+    public string? ImageUrl { get; set; }
+
     public string? Description { get; set; }
 
     public string? TechnicalInfo { get; set; }
