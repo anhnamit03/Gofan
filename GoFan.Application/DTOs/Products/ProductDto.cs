@@ -11,6 +11,7 @@ public class ProductDto
     public string Name { get; set; } = null!;
 
     public decimal BasePrice { get; set; }
+    public decimal? DiscountPrice { get; set; }
 
     public string? ImageUrl { get; set; }
 
@@ -21,9 +22,13 @@ public class ProductDto
     public bool Active { get; set; }
 
     // Promotion hiện tại
-    public decimal? DiscountPercent { get; set; }
+    public GoFan.Application.DTOs.Promotions.PromotionDto? Promotion { get; set; }
 
-    public decimal? SalePrice { get; set; }
+    // Hình ảnh / video
+    public List<ProductMediaDto> Medias { get; set; } = new();
+
+    // Sản phẩm mua kèm
+    public List<ProductAddOnDto> AddOns { get; set; } = new();
 
     public DateTime CreatedAt { get; set; }
 

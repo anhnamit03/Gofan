@@ -1,4 +1,4 @@
-﻿using GoFan.Application.DTOs.Products;
+using GoFan.Application.DTOs.Products;
 using GoFan.Application.Interfaces.Repositories;
 using GoFan.Application.Interfaces.Services;
 using GoFan.Application.Mappers;
@@ -19,20 +19,20 @@ public class ProductService : IProductService
     public async Task<List<ProductDto>> GetAllAsync()
     {
         var products = await _productRepository.GetAllAsync();
+        if (products.Count == 0)
+        {
+            return new List<ProductDto>();
+        }
 
         var now = DateTime.UtcNow;
+        var productIds = products.Select(p => p.Id);
+        var promotionsMap = await _productRepository.GetActivePromotionsAsync(productIds, now);
 
-        var result = new List<ProductDto>();
-
+        var result = new List<ProductDto>(products.Count);
         foreach (var product in products)
         {
-            var promotion =
-                await _productRepository.GetActivePromotionAsync(
-                    product.Id,
-                    now);
-
-            result.Add(
-                ProductMapper.ToDto(product, promotion));
+            promotionsMap.TryGetValue(product.Id, out var promotion);
+            result.Add(ProductMapper.ToDto(product, promotion));
         }
 
         return result;
@@ -40,22 +40,38 @@ public class ProductService : IProductService
 
     public async Task<ProductDto?> GetByIdAsync(int id)
     {
-        var product =
-            await _productRepository.GetByIdAsync(id);
-
+        var product = await _productRepository.GetByIdAsync(id);
         if (product == null)
         {
             return null;
         }
 
         var now = DateTime.UtcNow;
+        var promotion = await _productRepository.GetActivePromotionAsync(product.Id, now);
+        var medias = await _productRepository.GetMediasAsync(product.Id);
+        var addOns = await _productRepository.GetAddOnsAsync(product.Id);
 
-        var promotion =
-            await _productRepository.GetActivePromotionAsync(
-                product.Id,
-                now);
+        var dto = ProductMapper.ToDto(product, promotion, medias, addOns);
 
-        return ProductMapper.ToDto(product, promotion);
+        // fill addon product details using batch lookup
+        if (dto.AddOns != null && dto.AddOns.Count > 0)
+        {
+            var addOnIds = dto.AddOns.Select(a => a.AddOnProductId).Distinct().ToList();
+            var addOnProducts = await _productRepository.GetByIdsAsync(addOnIds);
+            var dict = addOnProducts.ToDictionary(p => p.Id);
+
+            foreach (var a in dto.AddOns)
+            {
+                if (dict.TryGetValue(a.AddOnProductId, out var prod))
+                {
+                    a.AddOnProductName = prod.Name;
+                    a.SKU = prod.SKU;
+                    a.UnitPrice = prod.BasePrice;
+                }
+            }
+        }
+
+        return dto;
     }
 
     public async Task<ProductDto> CreateAsync(CreateProductDto dto)
